@@ -1,8 +1,6 @@
 <!-- markdownlint-disable MD033 -->
 <div align="center">
 
-<img src="img/savant.png" alt="SAVANT Logo" width="180" />
-
 <img src="img/banner.png" alt="SAVANT-BOT Banner" width="850" />
 
 # SAVANT-BOT v0.0.2
