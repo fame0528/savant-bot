@@ -13,7 +13,7 @@ A production-grade Discord bot that ships with the full SAVANT ecosystem's agent
 
 **Zero Warning Build:** `cargo clippy --all-targets -- -D warnings` produces zero warnings. Zero `unwrap()`/`expect()` in non-test code. Enterprise-grade error handling throughout.
 
-**OpenRouter-Backed LLM:** Defer-then-edit slash commands with token-bucket rate limiting, exponential backoff on 429, and a sliding-window conversation context. Provider trait + MockProvider for tests; OpenRouter as the v1 production backend (free tier supported via `openrouter/auto`).
+**OpenRouter-Backed LLM:** Defer-then-edit slash commands with token-bucket rate limiting, exponential backoff on 429, and a sliding-window conversation context. Provider trait + MockProvider for tests; OpenRouter as the v1 production backend (free tier via `openrouter/free`).
 
 **SQLite-Backed Persistence:** Temp-punishment cases (mute, timeout, ban) persisted to SQLite with WAL journaling. A 60-second polling task reverses expired punishments on bot restart — no volatile `tokio::time::sleep` timers.
 
@@ -103,7 +103,7 @@ OPENROUTER_API_KEY=sk-or-v1-your_key_here
 
 # Optional
 DATABASE_URL=sqlite:savant-bot.db
-LLM_DEFAULT_MODEL=openrouter/auto
+LLM_DEFAULT_MODEL=openrouter/free
 RUST_LOG=info,savant_bot=debug
 COMMAND_PREFIX=!
 LLM_RATE_LIMIT=5:0.5
@@ -155,7 +155,7 @@ All non-secret configuration is in `protocol.config.yaml`. Secrets are in `.env`
 | `DISCORD_BOT_TOKEN` | *(required)* | Bot token from Discord developer portal |
 | `OPENROUTER_API_KEY` | empty (LLM disabled) | OpenRouter API key for `/ask` |
 | `DATABASE_URL` | `sqlite:savant-bot.db` | SQLite path or `postgres://...` for v2+ |
-| `LLM_DEFAULT_MODEL` | `openrouter/auto` | Default model slug for `/ask` |
+| `LLM_DEFAULT_MODEL` | `openrouter/free` | Default model slug for `/ask` |
 | `RUST_LOG` | `info,savant_bot=debug` | `tracing-subscriber` env-filter format |
 | `COMMAND_PREFIX` | `!` | Prefix for text commands (set empty to disable) |
 | `LLM_RATE_LIMIT` | `5:0.5` | `<max>:<per_second>` token-bucket rate |

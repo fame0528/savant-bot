@@ -438,7 +438,7 @@ mod tests {
         ])
         .with_temperature(0.3)
         .with_max_tokens(64)
-        .with_fallback_models(vec!["openrouter/auto".to_string()]);
+        .with_fallback_models(vec!["openrouter/free".to_string()]);
         mock.chat(req).await.unwrap();
         let calls = mock.calls();
         assert_eq!(calls.len(), 1);
@@ -447,7 +447,7 @@ mod tests {
         assert_eq!(calls[0].messages[1].role, "user");
         assert!((calls[0].temperature - 0.3).abs() < f32::EPSILON);
         assert_eq!(calls[0].max_tokens, 64);
-        assert_eq!(calls[0].models, vec!["openrouter/auto".to_string()]);
+        assert_eq!(calls[0].models, vec!["openrouter/free".to_string()]);
     }
 
     #[test]

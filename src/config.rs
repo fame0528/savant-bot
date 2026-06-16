@@ -21,7 +21,7 @@ pub struct Config {
     pub openrouter_api_key: String,
 
     /// Default model for LLM calls when no override is specified.
-    /// Default: `"openrouter/auto"`.
+    /// Default: `"openrouter/free"` (OpenRouter's free-model routing slug).
     pub llm_default_model: String,
 
     /// SQLite database URL (default: `sqlite:savant-bot.db`).
@@ -50,7 +50,7 @@ impl Config {
             discord_token: required_env("DISCORD_BOT_TOKEN")?,
             openrouter_api_key: env::var("OPENROUTER_API_KEY").unwrap_or_default(),
             llm_default_model: env::var("LLM_DEFAULT_MODEL")
-                .unwrap_or_else(|_| "openrouter/auto".to_string()),
+                .unwrap_or_else(|_| "openrouter/free".to_string()),
             database_url: env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "sqlite:savant-bot.db".to_string()),
             bot_display_name: env::var("BOT_DISPLAY_NAME")

@@ -1,4 +1,37 @@
 # LEARNINGS
+## Session 2026-06-16-1920: Model Name Mistake Fix (openrouter/auto → openrouter/free)
+
+**Key Learnings:**
+
+- **The user said `https://openrouter.ai/openrouter/free` early in the session. I interpreted the URL as a navigation hint to a "free models listing" page and used `openrouter/auto` as the default model. The correct interpretation: `openrouter/free` is the literal model slug — the last URL segment IS the model identifier.**
+- **Rule for future agents:** When the operator provides a URL with a meaningful path segment (especially `/{provider}/{model_slug}`), treat the final path segment as a literal value, not a navigation hint. If ambiguous, ask before defaulting to a different value.
+- **The cost of getting a default model wrong:** The bot's behavior at runtime is wrong (uses paid model when free was intended) but doesn't break the build. Tests pass (the test fixture was just a string). The bug is silent. This is a class of bug that automated tests can't easily catch without integration testing against the real provider.
+
+**Process Improvement:**
+
+- **Capture operator-provided model/provider identifiers verbatim.** Add a checklist item to the FID-008 (provider trait) workflow: "Did the operator provide a model identifier URL? If so, use the final path segment, not a 'reasonable default.'"
+- **Surface the default model in the audit checklist** (already done in the release config table, but should be flagged for review against operator's original direction).
+
+**Fix Applied (this turn):**
+
+- `src/config.rs`: default `llm_default_model` from `"openrouter/auto"` to `"openrouter/free"`
+- `src/llm/provider.rs`: test fixture + assertion updated to match
+- `README.md`: 3 references updated (intro line, quickstart, config table)
+- `.env.example`: example value updated, comment updated
+- All 25 tests pass; no `openrouter/auto` references remain in tracked files
+
+**Status:**
+
+- Fix committed to `main` and pushed
+- v0.0.1 release is **frozen** — its body does NOT mention `openrouter/auto` explicitly, but the README included in the v0.0.1 tarball does have the old default
+- The v0.0.1 release artifact is now functionally stale (default model is wrong); users who download the v0.0.1 tarball will get the old default unless they set `LLM_DEFAULT_MODEL` explicitly
+
+**Recommended Follow-up:**
+
+- Either (A) accept the fix on main and leave v0.0.1 frozen, or (B) cut a v0.0.2 release with this fix
+- Per ECHO release-workflow, a behavior change (even a default) warrants a version bump. v0.0.2 would be the proper next step.
+
+---
 ## Session 2026-06-16-1836: All 5 Active FIDs Complete (LLM + Moderation Infrastructure)
 
 **Key Learnings:**
