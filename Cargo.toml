@@ -1,6 +1,6 @@
 [package]
 name = "savant-bot"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 description = "Savant ecosystem Discord bot — Rust-native, Poise/Serenity"
 license = "MIT"

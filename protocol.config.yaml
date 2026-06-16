@@ -17,7 +17,7 @@
 project:
   name: "savant-bot"
   description: "Savant ecosystem Discord bot — Rust-native, Poise/Serenity, part of the fame0528/savant stack"
-  version: "0.0.1"  # savant-bot's own application version (independent of ECHO protocol version)
+  version: "0.0.2"  # savant-bot's own application version (independent of ECHO protocol version)
 
 protocol:
   version: "0.1.3"  # ECHO Protocol version this project conforms to (MUST match VERSION file at project root)

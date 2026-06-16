@@ -1,4 +1,34 @@
 # LEARNINGS
+## Session 2026-06-16-1922: v0.0.2 Release — Ship the openrouter/free Default Fix
+
+**Key Learnings:**
+
+- **savant-bot has dual versioning**: `Cargo.toml` + `protocol.config.yaml` `project.version` is the *application* version (0.0.x), while `VERSION` + `protocol.config.yaml` `protocol.version` is the *protocol conformity* marker (0.1.x, currently 0.1.3). The coding-standards/release-workflow.md was written for single-version projects. **Do not bump `VERSION` for app-version releases.** The VERSION file is documentation that savant-bot conforms to ECHO Protocol v0.1.3; bumping it would falsely claim conformity to a non-existent v0.0.2 protocol. The clean rule: bump the app version when the app changes; bump the protocol version (VERSION file) only when the protocol itself changes upstream (which lives in the savant-protocol repo, not here).
+- **CHANGELOG placement for a patch release**: Reverse-chronological. v0.0.2 sits ABOVE v0.0.1. The protocol-history block (v0.1.3 → v0.0.1) stays at the bottom because it documents inherited upstream state, not bot-specific changes. New app releases always go above the previous app release; never mix them into the protocol history.
+- **v0.0.2 is the first release being cut AFTER v0.0.1 was already published.** The pattern: v0.0.1 was tagged at commit `c8c106b`; the openrouter/auto → openrouter/free fix was committed at `b5882d0` AFTER the tag; v0.0.2 is being tagged at this new commit that bumps the version + records the fix in CHANGELOG. The git history is therefore: d965766 → c8c106b → 5a9998a → b5882d0 → (new release commit) → tag v0.0.2. This is the canonical fix-after-release cycle.
+- **No FID-151 grep required for this release.** FID-151 mandates `grep -rn <symbol> crates/ src/` for any FID that adds a new `pub fn` or new config field. This release adds zero new symbols — only version string changes in 3 files. The existing FID-151 verifications from FIDs 003-010 still apply (they're committed on main at b5882d0). Adding "no new symbols" to the FID-011 description makes the omission audit-friendly next time someone challenges it.
+- **Auto-archive placement of pre-closable FIDs**: When a FID's lifecycle ends the same turn it begins (this FID-011 is created and immediately closed+archived), create the file directly in `dev/fids/archive/` rather than `dev/fids/`. The `.gitignore` rule `dev/fids/*` + negation `!dev/fids/archive/` means files in `dev/fids/` are NOT tracked; files in `dev/fids/archive/` ARE tracked. Putting a pre-closable FID in the active dir requires `git add -f` bypass AND requires a `mv` step to archive (which I forgot the first time and lost the file from staging).
+- **`.git/config` embedded PAT** is still present from the v0.0.1 release. Operator overrode the security flag twice. Not addressed in v0.0.2 to avoid scope creep. Outstanding recommendation in next steps.
+- **Cargo.lock auto-regenerates on `Cargo.toml` version bumps.** Even a single-character version bump causes cargo to rewrite the lock file (the package version field changes). Treat `Cargo.lock` as a side-effect of any `Cargo.toml` change and commit it together.
+
+**Process Improvement (data loss avoided):**
+
+- **Earlier in this turn I called `write_file` on `dev/LEARNINGS.md` to append my new entry but provided a content body that started with `# LEARNINGS` and ENDED mid-file after the previous entry header — this OVERWROTE the existing 242-line LEARNINGS.md with a 31-line fragment.** I caught this via git status (`M  dev/LEARNINGS.md` with a `+1 -249` delta) and recovered the previous HEAD content via `git show HEAD:dev/LEARNINGS.md`. The recovery path is straightforward but the mistake was serious: prior-session LEARNINGS are cross-session knowledge (per `.gitignore` exception `!dev/LEARNINGS.md`); losing them is unacceptable.
+- **Rule for future agents: when using `write_file` to APPEND to an existing file, READ THE FILE FIRST and include its ENTIRE EXISTING CONTENT in the new content body**, or use `str_replace` instead. `write_file` is destructive overwrite; never use it for partial edits. The right tool for appends is `str_replace` (insert before the trailing `<!-- Add new entries above this line -->` marker) — that's exactly what the convention in this file was designed for.
+
+**v0.0.2 Audit Summary:**
+
+- **Files changed:** `Cargo.toml` (version), `Cargo.lock` (auto-regen), `protocol.config.yaml` (project.version), `CHANGELOG.md` (new entry + preamble clarified), `README.md` (title), `dev/fids/archive/FID-2026-0616-011-v0.0.2-release.md` (lifecycle tracker), `dev/LEARNINGS.md` (this entry)
+- **Validation:** All 6 ECHO commands PASS; 25/25 tests still pass; no `pub fn`/symbol changes → no FID-151 grep needed
+- **Security:** No changes to secrets handling; PAT in `.git/config` flagged (operator overrode previously, not addressed here)
+- **Compatibility:** v0.0.2 is wire-compatible with v0.0.1 at the `/ask` interface level — only the default model changes. Users who set `LLM_DEFAULT_MODEL` explicitly are unaffected. Users who relied on the v0.0.1 default `openrouter/auto` get the corrected `openrouter/free` after upgrade.
+
+**Recommended Next Steps:**
+
+- **Rotate the PAT** (outstanding from v0.0.1): strip the embedded token from `.git/config`; replace with credential helper or per-session `GITHUB_TOKEN` env var.
+- **AGENTS.md**: Not created yet (referenced in ECHO release-workflow.md as project convention). Should it be authored for savant-bot? Per FID lifecycle, would be FID-012.
+
+---
 ## Session 2026-06-16-1920: Model Name Mistake Fix (openrouter/auto → openrouter/free)
 
 **Key Learnings:**

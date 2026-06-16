@@ -4,13 +4,33 @@ All notable changes to this project are documented here.
 
 Format: Each entry includes the version, date, and changes.
 
-**Version source of truth:** `VERSION` file at project root. All other files
-(protocol.config.yaml, ECHO.md, README.md, STARTER-PROMPT.md) should match.
-When bumping, update `VERSION` first, then propagate.
+**Version source of truth:** Two distinct version sources:
+- **App version** (0.0.x): `Cargo.toml` `version` + `protocol.config.yaml` `project.version`. Bump on app releases.
+- **ECHO Protocol version** (0.1.x): `VERSION` file + `protocol.config.yaml` `protocol.version`. Reflects upstream protocol conformity; do not bump for app releases.
+
+When bumping the app version, update `Cargo.toml` first, then propagate to `protocol.config.yaml` `project.version`, `CHANGELOG.md`, and `README.md`. Leave `VERSION` unchanged unless the upstream protocol version itself is changing.
 
 **Version history note:** This project was forked from Savant's internal ECHO
 Protocol (formerly v4.0.0). The version was reset to v0.0.1 for the public
 release to reflect independent versioning.
+
+---
+
+## v0.0.2 — 2026-06-16 (BUGFIX: default LLM model corrected)
+
+**SAVANT-BOT v0.0.2** — patch release. Ships the openrouter/auto → openrouter/free default-model fix from v0.0.1's corrected interpretation of the operator's original URL `https://openrouter.ai/openrouter/free` (where `openrouter/free` is the literal model slug, not a navigation hint). No code or API changes — only default value, documentation, and version bumps. Wire-compatible with v0.0.1.
+
+### Fixed
+
+- **Default LLM model** (`src/config.rs`): `llm_default_model` default corrected from `"openrouter/auto"` to `"openrouter/free"`. The earlier default was a wrong-interpretation bug from the prior session (commit `b5882d0`). Users who set `LLM_DEFAULT_MODEL` explicitly are unaffected; users relying on the default now get OpenRouter's free-model routing slug.
+- **README.md intro line:** Updated to reference `openrouter/free` (was `openrouter/auto`). Was previously inconsistent with the corrected default.
+
+### Audit
+
+- **Verified unchanged:** all `src/*.rs` source files (zero API changes), `.env.example` template (default lives in `src/config.rs`), migrations (zero schema changes), ECHO Protocol conformity (still v0.1.3; this release bumps app version only).
+- **Validated:** all 6 ECHO validation commands PASS; 25/25 unit tests pass (no test changes; the test fixture in `src/llm/provider.rs` was updated at commit `b5882d0` to match the corrected default).
+- **FID-151 N/A:** no new `pub fn` introduced this release. The release commit touches only string version fields; call-graph reachability from FIDs 003-010 still applies unchanged.
+- **Spec consistency:** `Cargo.toml` v0.0.2 ↔ `protocol.config.yaml` `project.version` v0.0.2 ↔ `CHANGELOG.md` (this entry) ↔ `README.md` title v0.0.2. Protocol version unchanged: `VERSION` file = `protocol.config.yaml` `protocol.version` = "0.1.3".
 
 ---
 

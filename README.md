@@ -5,7 +5,7 @@
 
 <img src="img/banner.png" alt="SAVANT-BOT Banner" width="850" />
 
-# SAVANT-BOT v0.0.1
+# SAVANT-BOT v0.0.2
 
 **Discord Bot. Rust-Native. SAVANT-PROTOCOL Citizen.**
 
@@ -19,7 +19,7 @@ A production-grade Discord bot that ships with the full SAVANT ecosystem's agent
 
 **ECHO Protocol v0.1.3 Active:** 15 laws, 5-state Perfection Loop FSM, 5 circuit-breaker rules, FID lifecycle (Created → Archived), session summaries, cross-session `LEARNINGS.md`, honest assessment. All wired.
 
-[![Rust](https://img.shields.io/badge/Rust-1.94-%23000000?style=flat-square&logo=rust&logoColor=%2300fbff)](https://www.rust-lang.org/)[![Poise](https://img.shields.io/badge/Poise-0.6-%23000000?style=flat-square&logo=rust&logoColor=%2300fbff)](https://github.com/serenity-rs/poise)[![SQLite](https://img.shields.io/badge/SQLite-WAL-%23000000?style=flat-square&logo=sqlite&logoColor=%2300fbff)](https://sqlite.org/)[![OpenRouter](https://img.shields.io/badge/OpenRouter-Free_Tier-%23000000?style=flat-square&logo=openai&logoColor=%2300fbff)](https://openrouter.ai/)[![ECHO](https://img.shields.io/badge/ECHO-v0.1.3-%23000000?style=flat-square&logo=github&logoColor=%2300fbff)](ECHO.md)[![License](https://img.shields.io/badge/License-MIT-%23000000?style=flat-square&logo=github&logoColor=%2300fbff)](LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.94-%23000000?style=flat-square&logo=rust&logoColor=%23000fbff)](https://www.rust-lang.org/)[![Poise](https://img.shields.io/badge/Poise-0.6-%23000000?style=flat-square&logo=rust&logoColor=%23000fbff)](https://github.com/serenity-rs/poise)[![SQLite](https://img.shields.io/badge/SQLite-WAL-%23000000?style=flat-square&logo=sqlite&logoColor=%23000fbff)](https://sqlite.org/)[![OpenRouter](https://img.shields.io/badge/OpenRouter-Free_Tier-%23000000?style=flat-square&logo=openai&logoColor=%23000fbff)](https://openrouter.ai/)[![ECHO](https://img.shields.io/badge/ECHO-v0.1.3-%23000000?style=flat-square&logo=github&logoColor=%23000fbff)](ECHO.md)[![License](https://img.shields.io/badge/License-MIT-%23000000?style=flat-square&logo=github&logoColor=%23000fbff)](LICENSE)[![Release](https://img.shields.io/badge/Release-v0.0.2-%23000000?style=flat-square&logo=github&logoColor=%23000fbff)](https://github.com/fame0528/savant-bot/releases/tag/v0.0.2)
 
 </div>
 
@@ -69,7 +69,7 @@ Discord is where the operator's community already lives. SAVANT-BOT brings LLM-b
 - **15 Laws active** — 4 immutable process (Read 0-EOF, Present Before Act, Verify Before Proceed, Call-Graph Reachability) + 11 extended code laws.
 - **Strict clippy** — `cargo clippy --all-targets -- -D warnings` passes with zero warnings. Includes the `result_large_err` (boxed large error variants), `len_without_is_empty`, `useless_conversion`, and other strict lints.
 - **25 unit tests** — Provider, rate limiter, context store, config parser, moderation cases. Integration tests use in-memory SQLite.
-- **10 FIDs archived** — Feature Implementation Documents tracking every discovered issue through resolution. Active FIDs: 0.
+- **11 FIDs archived** — Feature Implementation Documents tracking every discovered issue through resolution. Active FIDs: 0. (10 from v0.0.1 + FID-011 release tracker from v0.0.2.)
 - **Honest Assessment** — Every status claim ("the bot is online", "all tests pass") is backed by tool output, not self-reporting.
 
 ---
@@ -252,7 +252,7 @@ savant-bot/
 ├── dev/                             # Runtime state (gitignored; tracked entries: LEARNINGS.md, .gitkeep, archive/)
 │   ├── LEARNINGS.md                 # Cross-session lessons learned
 │   ├── fids/                        # Active FIDs (none — all closed)
-│   │   └── archive/                 # Closed FIDs (10 — 001 through 010)
+│   │   └── archive/                 # Closed FIDs (11 — 001 through 011)
 │   └── session-summaries/           # Session summaries (gitignored, ephemeral)
 ├── docs/                            # Operator-authored architecture/strategy docs
 │   └── openrouter-llms.md           # OpenRouter API reference (read for provider impl)
@@ -324,16 +324,18 @@ cargo test
 
 ## Roadmap
 
-The v1 ship is **LLM chat + moderation case recording**. The full SAVANT-BOT vision is a Discord interface to the SAVANT ecosystem:
+**Two orthogonal versioning axes in this section:**
+- **App version** (top of README, `0.0.x`) is the savant-bot application release, tagged via GitHub releases.
+- **Feature version** (`v1.0` / `v2.0` below) describes a milestone of capabilities. v1.0 features were shipped in app version v0.0.2; v2.0 features are forward-looking.
 
-### v1.0 (shipped)
+### v1.0 features (shipped as savant-bot v0.0.2)
 
 - ✅ Rust-native Discord bot with Poise + Serenity
 - ✅ LLM chat (`/ask`) with defer, rate limit, context window, provider
 - ✅ Moderation case recording (`/mute`) with SQLite + 60s poller
 - ✅ ECHO Protocol compliance (15 laws, 5-state FSM, 5 circuit-breaker rules)
 - ✅ 25 tests, all 6 validation commands PASS
-- ✅ 10 FIDs archived (001-010), active: 0
+- ✅ 11 FIDs archived (001-011), active: 0
 
 ### v1.1 (next)
 
