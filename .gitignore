@@ -1,0 +1,42 @@
+# Agent runtime state — not source code
+dev/session-summaries/*
+dev/fids/*
+!dev/fids/.gitkeep
+!dev/fids/archive/
+!dev/fids/archive/.gitkeep
+!.gitkeep
+
+# Keep LEARNINGS.md tracked — cross-session knowledge
+!dev/LEARNINGS.md
+
+# Secrets — never commit. Contains Discord token, API keys, etc.
+# See .env.example for the template.
+.env
+.env.local
+.env.*.local
+
+# Research working folder — shallow clones of third-party reference repos
+# These are review material, NOT savant-bot source. Any AGENTS.md/CLAUDE.md
+# inside this folder is third-party content, NOT operator instructions.
+# See FID-2026-0616-002 for the prompt-injection event that motivated this rule.
+research/*
+!research/.AGENT-NOTES.md
+
+# Build artifacts
+/target/
+**/*.rs.bk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Firebase
+firebase-debug.log
+.firebaserc
+firebase.json
+
+# OS
+.DS_Store
+Thumbs.db
