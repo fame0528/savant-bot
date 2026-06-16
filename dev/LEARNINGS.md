@@ -269,4 +269,46 @@
 - Verified `fame0528/savant-trading` is 84.8% Rust, `fame0528/Savant` is 90.2% Rust — operator's claim about a Rust-dominant ecosystem is accurate and reproducible from public GitHub language stats.
 
 ---
+## Session 2026-06-16-2330: AGENTS.md Generated — savant-bot's First Project-Specific Onboarding Doc
+
+**Key Learnings:**
+
+- **AGENTS.md is the project-specific layer, not a duplicate of ECHO.md.** Upstream `fame0528/Savant/AGENT-PROMPT.md` repeats the protocol inline (~3000 words including the laws). savant-bot/AGENTS.md is the project overlay (~1100 words) using a **hybrid reference model**: 1-line pointers to ECHO.md for universal rules; full content only for savant-bot-specific sections. The alternative (copying all 15 laws into AGENTS.md) wastes 700 lines and risks drift when upstream ECHO.md updates. Future agents: read ECHO.md first, then AGENTS.md for project deltas.
+- **The dual-versioning rule belongs in AGENTS.md, not just in CHANGELOG preamble.** A CHANGELOG-only rule is invisible to agents reading the codebase at boot. AGENTS.md Section 2 makes the 4-way consistency check (Cargo.toml ↔ protocol.config.yaml project.version ↔ CHANGELOG.md top entry ↔ README.md title) discoverable at project root.
+- **The production-entry-point file list is project-specific.** ECHO.md Law 4 mandates grep-verification but does not list WHICH files count as production entry points. Savant-core lists 5 files (`ignition.rs`, `swarm.rs`, `heartbeat.rs`, `stream.rs`, `reactor.rs`); savant-bot lists **6** different files (`src/main.rs`, `src/lib.rs`, `src/commands/mod.rs`, `src/data.rs`, `src/moderation/poller.rs`, **`src/config.rs`** — added per code-review after FID-012 draft). The `src/config.rs` addition came from a HIG severity finding: anti-pattern #1 (wrong default LLM model) lives in `src/config.rs::llm_default_model` and would not be caught by a generic call-graph reachability grep. Listing per-project prevents agents from grep-orphaning new features — the "wrote but not wired" failure mode FID-151 was created to catch.
+- **The release script story is non-obvious and is saved in AGENTS.md, not release-workflow.md.** savant-bot inherits `scripts/release.py` from savant-protocol (stdlib-only Python, credential-helper-based). When the operator's environment changed to Windows with `.env`-based tokens, a separate `scripts/release-v0.0.2.ps1` PowerShell variant was needed. Both are valid; AGENTS.md Section 5.3 documents the choice criteria by environment. Without AGENTS.md, future agents would have to rediscover this through a failed release.
+- **DOM (Developer Operating Model) is a novel section for savant-bot AGENTS.md** that maps subsystems → files → FIDs in a 3-column table. Future agents fixing a bug in the LLM chain know to look at `src/llm/{provider,defer,rate_limit,context}.rs` and FIDs 005/006/007/008. The DOM was inspired by the LEARNINGS.md pattern of "file ↔ intent" tracking but consolidated for fast lookup.
+
+**Process Improvement:**
+
+- **Write_file lesson: 2nd occurrence avoided.** This FID updated `dev/LEARNINGS.md` using `str_replace` with the existing file marker `<!-- Add new entries above this line -->` at line 272. The data-loss lesson from session 2026-06-16-1922 propagated correctly — no recovery was needed. The initial `str_replace` call failed with `Found 2 occurrences` because the marker string ALSO appears in prose on line 17 (inside this very session's prior entry) — fixed by using a longer `oldString` that includes the unique trailing line of the previous entry. **Rule for future agents: when the marker string appears multiple times**, prefix with a couple of lines from the prior entry header to disambiguate.
+- **Per-archive FID placement decision** (anti-pattern #5 reaffirmed): pre-closable FID-012 was placed directly in `dev/fids/archive/` rather than `dev/fids/` + move, avoiding the `git add -f` bypass and the `mv` step that previously caused staging issues (per FID-011 archive Lessons Learned).
+- **Markdownisnt for documentation FIDs is the right gate.** AGENTS.md is markdown; the `.markdownlint.json` lenient rules (MD013/MD029/MD033/MD041/MD060 disabled) apply. Manual visual scan confirmed no rule violations. Future agents: when a FID writes only documentation (no `pub fn`, no schema change, no config touch), `markdownlint` + visual review replaces the 6-cargo-command gate. **Caveat**: markdownlint CLI is not on `%PATH%` in this Windows env, so the scan is necessarily manual. If `markdownlint-cli` is installed in the future, swap manual-scan for the CLI.
+- **The grer regex character pitfall:** `grep -rn "<symbol>"` interprets regex by default. If `<symbol>` contains `.`, `:`, etc., grep may misinterpret. The AGENTS.md Section 4 grep example now documents the `-F` (fixed-string) flag with a worked example using `llm_default_model`.
+
+**Code-Reviewer Feedback (FID-012 draft, 2 HIGH findings applied):**
+
+- **A. Section 4 missing `src/config.rs`** → Fixed: Section 4 table now lists `src/config.rs` as the default-value owner; grep example updated; `-F` flag documented.
+- **B. FID-012 AUDIT lacked pasted tool-output evidence** → Fixed: FID-012 Perfection Loop section now pastes the actual `cargo build` / `cargo check` / `cargo clippy --all-targets -- -D warnings` / `cargo test` outputs from the validation run; markdownlint claim honestly tagged `[manually scanned: markdownlint CLI not on PATH]`.
+- **Pass on 8 of 10 reviewer verification questions** (hybrid reference model, dual-versioning rule, release script story, anti-pattern sourcing, DOM table usefulness, sister projects, markdown quality, LEARNINGS entry format — all confirmed).
+
+**v0.0.3+ Roadmap Consideration (recorded for next session):**
+
+- **PAT-in-`~/.gitignore` rotation** still outstanding (tracked across multiple sessions v0.0.1, v0.0.2, v0.0.2.5). Recommend addressing in v0.0.3.
+- **`scripts/release.py` adaptation for savant-bot** — Currently the inherited `scripts/release.py` hard-codes `REPO_SLUG = "fame0528/savant-protocol"`. It cannot publish a savant-bot release as-is. The PowerShell script (Section 5.2) is the working savant-bot-specific release path; a `scripts/release.py` adaptation (parameterized REPO_SLUG) would be a worthwhile follow-up.
+- **Promote write_file lesson to coding-standards** — Currently only in this LEARNINGS entry. A `coding-standards/`-level rule would propagate to all agents without requiring LEARNINGS read-through.
+
+**Release Status (this turn):**
+
+- FID-012 created + closed in same turn
+- AGENTS.md committed to `main` post-v0.0.2
+- No version bump required (documentation-only FID; app version stays at v0.0.2)
+- Tag v0.0.2 unchanged; new commit adds AGENTS.md on the post-release main
+- Scripts/release-v0.0.2.ps1 also committed in this same commit (housekeeping — was previously untracked after the v0.0.2 release)
+
+**Recommended Next Steps:**
+
+- v0.0.3 release planning (PAT rotation; or `/mute` actually-mutes work; or promote write_file lesson to coding-standards)
+- Run `sync-agents.py` from savant-protocol to verify upstream ECHO.md still matches the local copy (manual diff recommended)
+
 <!-- Add new entries above this line -->
