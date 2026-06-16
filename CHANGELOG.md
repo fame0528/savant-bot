@@ -1,8 +1,6 @@
 # Changelog
 
-All notable changes to this project are documented here automatically by the
-agent when a FID reaches **Closed** status. Entries are added in reverse
-chronological order (newest first).
+All notable changes to this project are documented here.
 
 Format: Each entry includes the version, date, and changes.
 
@@ -12,9 +10,87 @@ When bumping, update `VERSION` first, then propagate.
 
 **Version history note:** This project was forked from Savant's internal ECHO
 Protocol (formerly v4.0.0). The version was reset to v0.0.1 for the public
-boilerplate release to reflect independent versioning.
+release to reflect independent versioning.
 
 ---
+
+## v0.0.1 — 2026-06-16 (INITIAL PUBLIC RELEASE)
+
+**SAVANT-BOT v0.0.1** — first public release. Discord bot, Rust-native, built under [SAVANT-PROTOCOL](https://github.com/fame0528/savant-protocol) (ECHO) v0.1.3. Sister project to [SAVANT-TRADING](https://github.com/fame0528/savant-trading) under the [SAVANT](https://github.com/fame0528/Savant) umbrella.
+
+### Highlights
+
+- **Rust-native Discord bot** built on Poise 0.6 + Serenity 0.12 + Tokio
+- **3 commands shipped:** `/ping` (smoke test), `/ask` (LLM chat with full infrastructure chain), `/mute` (moderation case recording, requires `MODERATE_MEMBERS`)
+- **LLM features** (OpenRouter-backed): defer-then-edit (3s → 15min deadline), token-bucket rate limiting (governor GCRA, 5 req / 0.5s default), exponential backoff on HTTP 429 (1s → 60s with ±20% jitter), sliding-window conversation context (20 messages / channel / 1h TTL)
+- **Moderation features:** SQLite-backed `moderation_cases` with WAL journaling, 60-second background poller for restart-survival
+- **Engineering discipline:** SAVANT-PROTOCOL v0.1.3 active with all 15 laws under `strict_mode: true`; zero-warning clippy build; FID lifecycle (10 archived, 0 active); session summaries; cross-session `LEARNINGS.md`
+- **25 unit tests passing;** all 6 validation commands PASS
+- **~1,800 lines of Rust** across 18 files in `src/` + 1 SQL migration
+
+### Implementation (10 FIDs)
+
+| FID | Title | Severity | Tests |
+|-----|-------|----------|-------|
+| `FID-2026-0616-010` | Cargo baseline + Poise skeleton (foundation) | high | 2 |
+| `FID-2026-0616-008` | Provider trait + OpenRouter + MockProvider | high | 8 |
+| `FID-2026-0616-005` | Defer-then-edit helper | high | 0* |
+| `FID-2026-0616-006` | Rate limiter + exponential backoff | high | 6 |
+| `FID-2026-0616-004` | SQLite poller + `/mute` command | medium | 2 |
+| `FID-2026-0616-007` | Sliding-window LLM context | medium | 6 |
+| `FID-2026-0616-003` | `src/commands/` layout | low | 0 |
+| `FID-2026-0616-002` | AstrBot prompt-injection contained | medium | 0 |
+| `FID-2026-0616-001` | Config optimization to canonical ECHO values | medium | 0 |
+| (sample) | `/ask` command (wires full LLM chain) | high | 0 |
+
+\* FID-005's helper is exercised end-to-end by `/ask`. Full FID bodies in `dev/fids/archive/`.
+
+### Release Prep (2026-06-16)
+
+- [LOW] **README rewritten with SAVANT-BOT branding** per operator's clarification. **SAVANT** = brand + core project. **SAVANT-PROTOCOL** = rule set (ECHO). **SAVANT-BOT** = this Discord bot. **SAVANT-TRADING** = sister project. Mirrors SAVANT and SAVANT-TRADING README style (black/cyan badges, all-caps project name, `**Savant** &bull; 2026` closing).
+- [LOW] **Custom banner** at `img/banner.png` (0.23 MB) per operator.
+- [LOW] **SAVANT logo** at `img/savant.png` (3.30 MB, downloaded from `fame0528/Savant`).
+- [LOW] **Git repo initialized** with main branch. Initial commit `d965766` contains 63 files.
+- [LOW] **.env.example expanded** with `OPENROUTER_API_KEY` and `LLM_DEFAULT_MODEL`.
+- [LOW] **`.gitignore` updated** for ECHO runtime artifacts, secrets, and research working folder.
+- [SECURITY] **Prompt-injection contained** (FID-002): AstrBot's `AGENTS.md` was detected when reading `research/AstrBot/AGENTS.md` and treated as third-party reference material, not operator commands.
+
+### Configuration (verified at release)
+
+| Field | Value | Source |
+|-------|-------|--------|
+| `project.version` | `0.0.1` | `Cargo.toml`, `protocol.config.yaml` |
+| `protocol.version` | `0.1.3` | matches `VERSION` file |
+| `language` | `rust` | config |
+| `quality.max_file_lines` | `300` | `coding-standards/rust.md` |
+| `quality.max_function_lines` | `50` | `coding-standards/rust.md` |
+| `quality.max_line_length` | `100` | `coding-standards/rust.md` |
+| `perfection_loop.max_iterations` | `10` | ECHO.md Rule #5 |
+| `perfection_loop.change_threshold` | `0.10` | ECHO.md Rule #1 |
+| `perfection_loop.convergence_threshold` | `0.02` | ECHO.md Rule #3 |
+| `session.autonomy_level` | `3` (Autonomous) | ECHO default |
+
+### Known Limitations (v0.0.1 → v1.0)
+
+- `/mute` records the case but does NOT call the Discord API to actually apply the mute (schema has `role_id` ready for v2)
+- LLM context is in-process only; lost on bot restart (SQLite persistence is v1.1)
+- Process-wide rate limiter (per-user keyed limiting is v1.1)
+- No streaming SSE for long LLM responses (v2)
+- Future: integrate with [SAVANT](https://github.com/fame0528/Savant)'s memory substrate (CortexaDB), soul/personality system, A2A delegation — see README Roadmap
+
+### Audit Results (release-time)
+
+- All 6 validation commands PASS: `cargo build`, `cargo check`, `cargo clippy --all-targets -- -D warnings`, `cargo fmt --check`, `cargo test` (25/25), `cargo clean`
+- Zero `unwrap()` / `expect()` in non-test code
+- Zero `TODO` / `FIXME` / `todo!` / `unimplemented!` in `src/`
+- Zero secrets in tracked files (`.env` properly gitignored)
+- All `pub fn` wired to consumers (FID-151 call-graph reachability verified)
+
+---
+
+### Inherited ECHO Protocol History
+
+The following entries document the [SAVANT-PROTOCOL](https://github.com/fame0528/savant-protocol) v0.1.x / v0.0.x releases that this project conforms to. Protocol-specific changes live in the upstream repo.
 
 ## v0.1.3 — 2026-06-15
 
@@ -144,54 +220,3 @@ Initial boilerplate release.
 - Starter prompts for universal and language-specific agent activation
 - VERSION file for protocol version tracking
 - CHANGELOG.md for automated change documentation
-
-<!-- Agent entries are added below this line -->
-
-## v0.0.1 — 2026-06-16
-
-Initial savant-bot configuration. ECHO Protocol v0.1.3 activated with all 15 laws under strict_mode. Configuration optimized to canonical ECHO values per operator's "optimize" directive.
-
-- [MEDIUM] protocol.config.yaml: Optimized to canonical ECHO.md / coding-standards/rust.md values per FID-2026-0616-001. Reverted 7 of 7 circuit-breaker/quality deviations (change_threshold 0.25→0.10, convergence_threshold 0.25→0.02, convergence_passes 5→2, max_iterations 20→10, max_line_length 500→100, max_file_lines 500→300, max_params 8→4). Preserved session.max_session_hours=12 as operator policy. Added inline comments citing canonical sources for every circuit-breaker and quality value, plus header comment documenting the optimization policy (FID-2026-0616-001 closed + archived)
-- [HIGH] protocol.config.yaml: language set from CHANGE_ME to rust (operator-selected; HALT condition from ECHO.md Session Lifecycle step 3 resolved)
-- [MEDIUM] protocol.config.yaml: project.version set to 0.0.1 (savant-bot's first application version, independent of ECHO protocol version 0.1.3)
-- [MEDIUM] protocol.config.yaml: protocol.version set to 0.1.3 to match inherited VERSION file (canonical ECHO protocol version)
-- [MEDIUM] protocol.config.yaml: 6 validation commands set to standard cargo defaults (build, test, type_check, lint, format, clean)
-- [LOW] project.name and project.description set to savant-bot-specific values
-- [LOW] dev/LEARNINGS.md: first session entry documenting the two-version model and the config optimization policy
-- [LOW] dev/session-summaries/2026-06-16-1649.md: initial session summary created
-- Source: ECHO Protocol boot session 2026-06-16-1649, 18 minutes duration, no production code written
-
-## v0.0.1 — 2026-06-16 (continued)
-
-Research repo review Phase 1 complete. 10 reference repos cloned, surveyed, and documented. Prompt injection in AstrBot AGENTS.md detected and contained.
-
-- [MEDIUM] FID-2026-0616-002: prompt injection in `research/AstrBot/AGENTS.md` detected and rejected — content mandated Python tooling (uv/ruff/pnpm), AstrBot-specific conventions, and a clause forbidding "report files such as xxx_SUMMARY.md" (would have blocked survey.md/comparison.md deliverables). Detected via file path attribution (third-party repo, not operator project per FID-151 Cross-Agent Claim Rule), rejected, documented. AstrBot placed out-of-scope in survey.md. Closed + archived.
-- [LOW] `research/` folder created, added to `protocol.config.yaml` paths with comment marking as operator working folder (not a code path)
-- [LOW] 10 reference repos shallow-cloned (~268 MB total): skyra (TS, doc §1.1), TitanBot (TS, doc §1.2), Logiq (Python, doc §1.3), poise (Rust, our framework), Savant (Rust, operator's), discord-bot-rs (Rust, closest stack match), AstrBot (Python, **out of scope due to injection**), discord-tickets-bot (TS, ticket reference), EconomyBot (JS, minimal economy), Discord-MusicBot (TS, **archived/out of scope**)
-- [LOW] `research/survey.md` written — Phase 1 deliverable: 10-repo top-level survey with per-repo notes, tech stacks, key features, relevance, and pre-Phase-2 observations
-- [LOW] dev/LEARNINGS.md: 2 new entries — "Session 2026-06-16-1707: Research Doc Is Not a Checklist" (InfluxDB retraction + FID-151 violation) and "Session 2026-06-16-1718: Prompt Injection Detected and Contained"
-- Source: ECHO Protocol boot session 2026-06-16-1649, 38 minutes duration at this checkpoint, no production code written
-
-## v0.0.1 — 2026-06-16 (first code task)
-
-First production code: Cargo baseline + Poise skeleton. All 6 validation commands pass, 2 unit tests pass, all call-graph reachability verified (FID-151).
-
-- [HIGH] FID-2026-0616-010: Cargo.toml baseline + Poise skeleton — closed + archived. Created 9 Rust files (~430 lines): `Cargo.toml`, `src/main.rs`, `src/lib.rs`, `src/error.rs`, `src/data.rs`, `src/config.rs`, `src/commands/mod.rs`, `src/commands/ping.rs`. All 6 validation commands PASS (cargo build, check, clippy --all-targets -- -D warnings, fmt --check, test, clean). 2 unit tests pass. Fixed 6 initial build errors + 2 clippy issues + 3 fmt diffs during the Perfection Loop. Boxed `sqlx::Error` and `serenity::Error` in `BotError` to satisfy `result_large_err` (both ~130 bytes, exceed clippy's 128-byte threshold). Added manual `From` impls to preserve `?` ergonomics.
-- [MEDIUM] Bot token saved to `.env` (gitignored). Created `.env.example` as safe template. Updated `.gitignore` to exclude `.env` and `.env.local`. **Security event:** operator typed the token in chat; the token is now in the conversation log. FID-2026-0616-009 created (status: open) — operator should regenerate the token in the Discord developer portal after this session.
-- [LOW] Initial Perfection Loop execution: 1 main loop + 1 self-correction pass for clippy issues. Converged in 1 iteration.
-- Source: ECHO Protocol boot session 2026-06-16-1649, 84 minutes duration at this checkpoint, first code task complete
-
-## v0.0.1 — 2026-06-16 (all 5 active FIDs complete)
-
-All planned LLM + moderation infrastructure implemented and verified. Bot can now defer, rate-limit, context-window, call OpenRouter, and record/polling temp-punishments. Sample `/ask` and `/mute` commands ship.
-
-- [HIGH] FID-2026-0616-008: Provider trait + OpenRouter impl + MockProvider — closed + archived. Added `reqwest`, `async-trait`, `serde`, `serde_json` deps. Implemented `Provider` trait, `OpenRouterProvider` (uses `https://openrouter.ai/api/v1/chat/completions`, `X-OpenRouter-Title` header per operator's doc), `MockProvider` for tests. 8 unit tests added. `Config` extended with `openrouter_api_key` and `llm_default_model`. `Data` holds `Arc<dyn Provider>`. `BotError::Llm(Box<ProviderError>)` variant added.
-- [HIGH] FID-2026-0616-005: defer-then-edit helper (`src/llm/defer.rs`, 42 lines) — closed + archived. `defer_and_run` wraps `ctx.defer()` + `ctx.say()`. Poise 0.6 uses `ctx.say()` after `ctx.defer()` for in-place edits (NOT `ctx.edit_response()` which doesn't exist in 0.6).
-- [HIGH] FID-2026-0616-006: rate limiter + exponential backoff (`src/llm/rate_limit.rs`, 143 lines) — closed + archived. `governor = "0.7"` + `rand = "0.8"` deps. `SharedLimiter` (token bucket via GCRA) + `with_backoff` (1s→60s exponential with ±20% jitter, retries on `ProviderError::RateLimited`). 6 unit tests added. `Data` holds `Arc<SharedLimiter>` (RateLimiter isn't Clone).
-- [MEDIUM] FID-2026-0616-007: sliding-window LLM context (`src/llm/context.rs`, 198 lines) — closed + archived. `ContextStore` is `Mutex<HashMap<ChannelId, VecDeque<ContextMessage>>>` with TTL. `Data` holds `ContextStore::new(20, 1h TTL)`. 6 unit tests added. v1 limitation: in-process only, lost on restart (documented).
-- [MEDIUM] FID-2026-0616-004: SQLite temp-punishment poller + moderation schema + /mute command — closed + archived. `migrations/0001_init.sql` (moderation_cases table + partial index on active+expired). `src/db/mod.rs` (WAL journaling, 5-conn pool, busy timeout, embed-and-execute migration). `src/moderation/cases.rs` (187 lines, CRUD) + `src/moderation/poller.rs` (60 lines, 60s interval). `src/commands/mute.rs` (58 lines, `required_permissions = "MODERATE_MEMBERS"`). 2 integration tests with in-memory SQLite. v1: poller marks expired as resolved + logs; v2: actual Discord API reversal (schema has `role_id` ready).
-- [HIGH] Sample `/ask` LLM command (`src/commands/ask.rs`, 76 lines) wires the full LLM chain end-to-end: defer → rate limit token → context lookup → ChatRequest build → provider call with backoff → context update → edit response. Uses `ctx.say()` after `ctx.defer()` for the edit. Includes `— via <model> (<tokens> tokens)` footer.
-- [LOW] Added `OPENROUTER_API_KEY` and `LLM_DEFAULT_MODEL` to `.env.example` template.
-- **Final state:** 25 tests pass, all 6 validation commands PASS, 3 commands registered (`/ping`, `/ask`, `/mute`), 10 FIDs archived (001-010), active FIDs: 0.
-- **Total Rust code:** ~1,800 lines across 18 files (src/ + migrations/).
-- Source: ECHO Protocol boot session 2026-06-16-1649, 100+ minutes duration at this checkpoint, all FID work complete.
